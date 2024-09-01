@@ -44,9 +44,4 @@ public class TaskDtoConverter {
                 .withState(taskState)
                 .build();
     }
-    public List<TaskDto> convertList(List<Task> taskList){
-        return Optional.ofNullable(taskList)
-                .map(array -> array.stream().map(this::convert).collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
-    }
 }
