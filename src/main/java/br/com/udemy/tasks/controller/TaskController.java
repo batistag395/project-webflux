@@ -6,6 +6,7 @@ import br.com.udemy.tasks.enums.TaskState;
 import br.com.udemy.tasks.model.Task;
 import br.com.udemy.tasks.service.TaskService;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @RestController
+@Log4j2
 @RequestMapping("/task")
 @AllArgsConstructor
 public class TaskController {
@@ -22,7 +24,9 @@ public class TaskController {
 
     @PostMapping
     public Mono<TaskDto> createTask(@RequestBody TaskDto task){
-        return service.insert(converter.convert(task)).map(converter::convert);
+        return service.insert(converter.convert(task))
+                .doOnNext(it -> log.info("Saved task with id {}", it.getId()))
+                .map(converter::convert);
     }
     @GetMapping
     public Page<TaskDto> getTasks(
@@ -43,6 +47,7 @@ public class TaskController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> delete(@PathVariable String id){
         return Mono.just(id)
+                .doOnNext(it -> log.info("Deleting task with id {{}", id))
                 .flatMap(service::deleteById);
     }
 }
