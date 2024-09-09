@@ -7,9 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -27,15 +32,24 @@ class TaskServiceTest {
         Task task = mock(Task.class);
         when(repository.save(any())).thenReturn(task);
 
-        StepVerifier.create(service.insert(task))
+        StepVerifier.create(service.insert(new Task()))
                 .then(() -> verify(repository, times(1)).save(any()))
                 .expectNext(task)
-                .expectComplete();
+                .expectComplete()
+                .verify();
 
     }
 
     @Test
-    void findPaginated() {
+    void testFindPaginated() {
+        var task = mock(Task.class);
+        var mockedPage = mock(Page.class);
+
+        when(customRepository.findPaginated(any(), anyInt(), anyInt())).thenReturn(mockedPage);
+        when(mockedPage.getContent()).thenReturn(List.of(task));
+        Page<Task> result = service.findPaginated(task, 0, 10);
+
+        assertEquals(task, result.getContent().get(0));
     }
 
     @Test
